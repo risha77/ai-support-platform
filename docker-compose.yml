@@ -9,8 +9,9 @@ services:
     container_name: support-postgres
     environment:
       POSTGRES_DB: support_db
-      POSTGRES_USER: support_user
-      POSTGRES_PASSWORD: support_pass
+      POSTGRES_USER: POSTGRESS
+      POSTGRES_PASSWORD: POSTGRESS
+      POSTGRES_INITDB_ARGS: "-U support_user"
     ports:
       - "5432:5432"
     volumes:
@@ -86,6 +87,21 @@ services:
       KAFKA_CLUSTERS_0_NAME: support-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
+  eureka:
+    image: springcloud/eureka:latest
+    container_name: support-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      eureka.instance.hostname: eureka
+      eureka.client.registerWithEureka: 'false'
+      eureka.client.fetchRegistry: 'false'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ── Application Services ────────────────────────────────────────────────────
 
   api-gateway:
@@ -100,6 +116,8 @@ services:
       EUREKA_URI: http://eureka:8761/eureka/
     depends_on:
       redis:
+        condition: service_healthy
+      eureka:
         condition: service_healthy
     restart: on-failure
 
@@ -125,6 +143,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      eureka:
+        condition: service_healthy
     restart: on-failure
 
   ticket-service:
@@ -145,6 +165,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      eureka:
+        condition: service_healthy
     restart: on-failure
 
   sentiment-service:
@@ -163,6 +185,8 @@ services:
       kafka:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      eureka:
         condition: service_healthy
     restart: on-failure
 
@@ -184,6 +208,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      eureka:
+        condition: service_healthy
     restart: on-failure
 
   knowledge-service:
@@ -204,6 +230,10 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      eureka:
         condition: service_healthy
     restart: on-failure
 

@@ -3,8 +3,8 @@ spring:
     name: ticket-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/support_db}
-    username: ${SPRING_DATASOURCE_USERNAME:support_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:support_pass}
+    username: ${SPRING_DATASOURCE_USERNAME:POSTGRESS}
+    password: ${SPRING_DATASOURCE_PASSWORD:POSTGRESS}
   jpa:
     hibernate:
       ddl-auto: update   # use validate or none in production

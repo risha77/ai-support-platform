@@ -1,41 +1,64 @@
 spring:
   application:
-    name: escalation-service
+    name: chat-service
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/support_db}
     username: ${SPRING_DATASOURCE_USERNAME:POSTGRESS}
     password: ${SPRING_DATASOURCE_PASSWORD:POSTGRESS}
   jpa:
     hibernate:
-      ddl-auto: update   # use validate or none in production
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: 6379
   kafka:
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
-      group-id: escalation-service
+      group-id: chat-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "com.support.*,java.util"
+        spring.json.trusted.packages: "com.support.*"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 server:
-  port: 8084
+  port: 8081
+
+anthropic:
+  api:
+    key: ${ANTHROPIC_API_KEY: KEY}
+    base-url: https://api.anthropic.com
+    model: claude-sonnet-4-6
 
 kafka:
   topics:
-    sentiment-results: sentiment-results
-    escalation-events: escalation-events
+    chat-events: chat-events
     ticket-events: ticket-events
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
-  instance:
-    preferIpAddress: true
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+feign:
+  circuitbreaker:
+    enabled: true
+  client:
+    config:
+      knowledge-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+
